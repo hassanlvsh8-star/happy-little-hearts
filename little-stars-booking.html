@@ -281,6 +281,85 @@
       box-shadow: 0 0 0 4px var(--green-glow);
     }
 
+    /* ─── Custom Calendar ────────────────────────────────────── */
+    .cal-wrap {
+      background: var(--white);
+      border: 2px solid #E6E6E6;
+      border-radius: var(--r);
+      padding: 12px;
+      user-select: none;
+    }
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .cal-nav {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      font-size: 22px;
+      color: var(--green-dark);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+      line-height: 1;
+    }
+    .cal-nav:hover:not(:disabled) { background: var(--green-light); }
+    .cal-nav:disabled { color: var(--text-light); cursor: not-allowed; }
+    .cal-month-label {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .cal-days-header {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      margin-bottom: 4px;
+    }
+    .cal-days-header span {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-light);
+      text-transform: uppercase;
+      padding: 4px 0;
+    }
+    .cal-days-header span:nth-child(3),
+    .cal-days-header span:nth-child(6),
+    .cal-days-header span:nth-child(7) { color: #DDBBBB; }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .cal-day:hover:not(.cal-disabled):not(.cal-selected) {
+      background: var(--green-light);
+      color: var(--green-dark);
+    }
+    .cal-day.cal-selected {
+      background: var(--green);
+      color: #fff;
+    }
+    .cal-day.cal-disabled {
+      color: #D8D8D8;
+      cursor: not-allowed;
+      text-decoration: line-through;
+    }
+    .cal-day.cal-empty { cursor: default; }
+    .cal-day.cal-today:not(.cal-disabled):not(.cal-selected) {
+      border: 2px solid var(--green);
+      color: var(--green-dark);
+    }
+
     /* ─── Time Grid ──────────────────────────────────────────── */
     .time-grid {
       display: grid;
@@ -644,8 +723,16 @@
 
       <div class="date-row">
         <div class="field-lbl">Select Date</div>
-        <div class="date-input-wrap">
-          <input type="date" class="date-input" id="dateInput" autocomplete="off">
+        <div class="cal-wrap">
+          <div class="cal-header">
+            <button class="cal-nav" id="calPrev">&#8249;</button>
+            <span class="cal-month-label" id="calMonthLabel"></span>
+            <button class="cal-nav" id="calNext">&#8250;</button>
+          </div>
+          <div class="cal-days-header">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
         </div>
       </div>
 
@@ -844,27 +931,85 @@
   /* ═══════════════════════════════════════
      DATE
   ═══════════════════════════════════════ */
-  function nextWeekday() {
-    const d = new Date();
-    while ([0, 3, 6].includes(d.getDay())) d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
+  /* ─── Custom Calendar ──────────────────────────────────── */
+  const CAL_MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let calYear, calMonth;
+
+  function calDisabled(d) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    return [0,3,6].includes(d.getDay()) || d < today;
+  }
+
+  function toYMD(d) { return d.toISOString().split('T')[0]; }
+
+  function nextAvailableDay() {
+    const d = new Date(); d.setHours(0,0,0,0);
+    while (calDisabled(d)) d.setDate(d.getDate() + 1);
+    return d;
+  }
+
+  function renderCalendar() {
+    const grid  = document.getElementById('calGrid');
+    const label = document.getElementById('calMonthLabel');
+    const prev  = document.getElementById('calPrev');
+    const now   = new Date();
+
+    label.textContent = CAL_MONTHS[calMonth] + ' ' + calYear;
+    prev.disabled = (calYear === now.getFullYear() && calMonth === now.getMonth());
+
+    grid.innerHTML = '';
+
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const offset   = firstDay === 0 ? 6 : firstDay - 1;
+    const days     = new Date(calYear, calMonth + 1, 0).getDate();
+    const today    = new Date(); today.setHours(0,0,0,0);
+
+    for (let i = 0; i < offset; i++) {
+      const e = document.createElement('div');
+      e.className = 'cal-day cal-empty';
+      grid.appendChild(e);
+    }
+    for (let day = 1; day <= days; day++) {
+      const d   = new Date(calYear, calMonth, day);
+      const ymd = toYMD(d);
+      const el  = document.createElement('div');
+      el.textContent = day;
+      const disabled  = calDisabled(d);
+      const selected  = ymd === sel.date;
+      const isToday   = d.toDateString() === today.toDateString();
+      el.className = 'cal-day' +
+        (disabled  ? ' cal-disabled' : '') +
+        (selected  ? ' cal-selected' : '') +
+        (!disabled && !selected && isToday ? ' cal-today' : '');
+      if (!disabled) {
+        el.addEventListener('click', () => {
+          sel.date = ymd;
+          sel.time = '';
+          renderCalendar();
+          loadSlots(ymd);
+        });
+      }
+      grid.appendChild(el);
+    }
   }
 
   function initDate() {
-    const inp  = document.getElementById('dateInput');
-    const init = nextWeekday();
-    inp.value  = init;
-    inp.min    = init;
-    sel.date   = init;
+    const first = nextAvailableDay();
+    calYear  = first.getFullYear();
+    calMonth = first.getMonth();
+    sel.date = toYMD(first);
 
-    inp.addEventListener('change', () => {
-      const d = new Date(inp.value + 'T00:00:00');
-      while ([0, 3, 6].includes(d.getDay())) d.setDate(d.getDate() + 1);
-      inp.value = d.toISOString().split('T')[0];
-      sel.date = inp.value;
-      sel.time = ''; // clear time when date changes
-      loadSlots(sel.date);
+    document.getElementById('calPrev').addEventListener('click', () => {
+      calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; }
+      renderCalendar();
     });
+    document.getElementById('calNext').addEventListener('click', () => {
+      calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; }
+      renderCalendar();
+    });
+
+    renderCalendar();
+    loadSlots(sel.date);
   }
 
   /* ═══════════════════════════════════════
@@ -1094,11 +1239,13 @@
     document.getElementById('step1').classList.add('active');
     document.querySelectorAll('.c-card').forEach(c => c.classList.remove('selected'));
 
-    const init = nextWeekday();
-    document.getElementById('dateInput').value = init;
-    sel.date = init;
+    const first = nextAvailableDay();
+    calYear  = first.getFullYear();
+    calMonth = first.getMonth();
+    sel.date = toYMD(first);
+    renderCalendar();
     updateDots();
-    loadSlots(init);
+    loadSlots(sel.date);
   }
 
   /* ═══════════════════════════════════════
