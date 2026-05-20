@@ -846,9 +846,7 @@
   ═══════════════════════════════════════ */
   function nextWeekday() {
     const d = new Date();
-    const day = d.getDay();
-    if (day === 6) d.setDate(d.getDate() + 2);
-    else if (day === 0) d.setDate(d.getDate() + 1);
+    while ([0, 3, 6].includes(d.getDay())) d.setDate(d.getDate() + 1);
     return d.toISOString().split('T')[0];
   }
 
@@ -861,9 +859,8 @@
 
     inp.addEventListener('change', () => {
       const d = new Date(inp.value + 'T00:00:00');
-      const day = d.getDay();
-      if (day === 6) { d.setDate(d.getDate() + 2); inp.value = d.toISOString().split('T')[0]; }
-      if (day === 0) { d.setDate(d.getDate() + 1); inp.value = d.toISOString().split('T')[0]; }
+      while ([0, 3, 6].includes(d.getDay())) d.setDate(d.getDate() + 1);
+      inp.value = d.toISOString().split('T')[0];
       sel.date = inp.value;
       sel.time = ''; // clear time when date changes
       loadSlots(sel.date);
