@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Happy Little Hearts — Book a Viewing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ─── Tokens ─────────────────────────────────────────────── */
+    :root {
+      --cream:        #FFF8EF;
+      --cream-dark:   #F5EFE3;
+      --green:        #52A96E;
+      --green-light:  #EAF5EE;
+      --green-dark:   #3A7D52;
+      --green-glow:   rgba(82, 169, 110, 0.22);
+      --yellow:       #F9CC4A;
+      --yellow-light: #FEF8DC;
+      --yellow-glow:  rgba(249, 204, 74, 0.35);
+      --peach:        #FFD8C2;
+      --sky:          #C8E8F8;
+      --lavender:     #DDD4F5;
+      --text:         #2E2E2E;
+      --text-mid:     #6B6B6B;
+      --text-light:   #A0A0A0;
+      --white:        #FFFFFF;
+      --booked-bg:    #F0F0F0;
+      --booked-text:  #C0392B;
+      --shadow-sm:    0 2px 8px rgba(0,0,0,0.07);
+      --shadow:       0 4px 18px rgba(0,0,0,0.09);
+      --shadow-lg:    0 8px 32px rgba(0,0,0,0.11);
+      --r-sm:         10px;
+      --r:            16px;
+      --r-lg:         22px;
+    }
+
+    /* ─── Reset ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    button { font-family: inherit; cursor: pointer; border: none; background: none; }
+    input  { font-family: inherit; }
+
+    /* ─── Body ───────────────────────────────────────────────── */
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Soft mesh background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 15% 10%, rgba(82,169,110,0.09) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 50% at 85% 85%, rgba(249,204,74,0.12) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 60% at 60% 0%,  rgba(200,232,248,0.15) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── Decorative floating shapes ─────────────────────────── */
+    .shapes {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .shape {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.18;
+      animation: drift var(--d) ease-in-out infinite alternate;
+      animation-delay: var(--dl);
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0) rotate(0deg) scale(1); }
+      to   { transform: translate(var(--tx), var(--ty)) rotate(20deg) scale(1.06); }
+    }
+
+    /* ─── App Shell ──────────────────────────────────────────── */
+    .app {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* ─── Header ─────────────────────────────────────────────── */
+    .header {
+      padding: 28px 24px 14px;
+      text-align: center;
+    }
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--white);
+      border-radius: 50px;
+      padding: 8px 18px 8px 10px;
+      box-shadow: var(--shadow-sm);
+      border: 1.5px solid rgba(249,204,74,0.35);
+    }
+    .logo-badge {
+      width: 38px; height: 38px;
+      background: var(--yellow);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px;
+      box-shadow: 0 3px 10px var(--yellow-glow);
+      animation: bobble 3.5s ease-in-out infinite;
+    }
+    @keyframes bobble {
+      0%,100% { transform: translateY(0) rotate(-4deg); }
+      50%      { transform: translateY(-5px) rotate(4deg); }
+    }
+    .logo-name {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--green-dark);
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+    }
+    .header-sub {
+      margin-top: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-light);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    /* ─── Progress ───────────────────────────────────────────── */
+    .progress-outer {
+      padding: 12px 24px 6px;
+    }
+    .progress-track {
+      display: flex;
+      align-items: center;
+    }
+    .p-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+    }
+    .p-dot {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: #E4E4E4;
+      border: 2px solid #E4E4E4;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 900;
+      color: #B0B0B0;
+      transition: background 0.3s, border-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s;
+      position: relative;
+      z-index: 1;
+    }
+    .p-dot.active {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+      transform: scale(1.12);
+      box-shadow: 0 0 0 5px var(--green-glow);
+    }
+    .p-dot.done {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+    .p-dot.done .p-num { display: none; }
+    .p-dot.done::after { content: '✓'; font-size: 15px; }
+    .p-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: center;
+      line-height: 1.2;
+      transition: color 0.3s;
+    }
+    .p-label.active { color: var(--green-dark); }
+    .p-line {
+      flex: 1;
+      height: 3px;
+      background: #E4E4E4;
+      border-radius: 99px;
+      max-width: 44px;
+      margin-top: -22px;
+      transition: background 0.4s;
+    }
+    .p-line.done { background: var(--green); }
+
+    /* ─── Content ────────────────────────────────────────────── */
+    .content {
+      flex: 1;
+      padding: 16px 20px 8px;
+      overflow: hidden;
+    }
+
+    /* ─── Steps ──────────────────────────────────────────────── */
+    .step {
+      display: none;
+    }
+    .step.active {
+      display: block;
+      animation: stepIn 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .step.back.active {
+      animation: stepInBack 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes stepIn     { from { opacity: 0; transform: translateX(36px);  } to { opacity: 1; transform: none; } }
+    @keyframes stepInBack { from { opacity: 0; transform: translateX(-36px); } to { opacity: 1; transform: none; } }
+
+    .step-title {
+      font-size: 23px;
+      font-weight: 900;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+    .step-sub {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-mid);
+      margin-bottom: 22px;
+    }
+
+    /* ─── Field Label ────────────────────────────────────────── */
+    .field-lbl {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--green-dark);
+      margin-bottom: 8px;
+    }
+
+    /* ─── Date Picker ────────────────────────────────────────── */
+    .date-row { margin-bottom: 22px; }
+    .date-input-wrap {
+      position: relative;
+    }
+    .date-input-wrap::before {
+      content: '📅';
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 17px;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .date-input {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      border: 2px solid #E6E6E6;
+      border-radius: var(--r-sm);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      background: var(--white);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+      min-height: 52px;
+    }
+    .date-input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 4px var(--green-glow);
+    }
+
+    /* ─── Time Grid ──────────────────────────────────────────── */
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 9px;
+    }
+    .t-slot {
+      background: var(--white);
+      border: 2px solid #EAEAEA;
+      border-radius: var(--r-sm);
+      padding: 11px 5px;
+      text-align: center;
+      cursor: pointer;
+      min-height: 62px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      transition: all 0.18s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .t-slot:hover:not(.booked):not(.selected) {
+      border-color: var(--green);
+      background: var(--green-light);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-sm);
+    }
+    .t-slot:active:not(.booked) { transform: translateY(0) scale(0.96); }
+    .t-slot.selected {
+      background: var(--green);
+      border-color: var(--green);
+      box-shadow: 0 5px 14px var(--green-glow);
+      transform: translateY(-3px);
+    }
+    .t-slot.booked {
+      background: var(--booked-bg);
+      border-color: #E0E0E0;
+      cursor: not-allowed;
+      opacity: 0.75;
+    }
+    .t-time {
+      font-size: 12px;
+      font-weight: 900;
+      color: var(--text);
+      line-height: 1;
+    }
+    .t-slot.selected .t-time { color: #fff; }
+    .t-badge {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--text-light);
+    }
+    .t-slot.selected .t-badge { color: rgba(255,255,255,0.75); }
+    .t-slot.booked .t-badge   { color: var(--booked-text); }
+
+    /* ─── Choice Cards ───────────────────────────────────────── */
+    .choice-list { display: flex; flex-direction: column; gap: 11px; }
+    .c-card {
+      background: var(--white);
+      border: 2px solid #EAEAEA;
+      border-radius: var(--r);
+      padding: 16px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 68px;
+      transition: all 0.2s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .c-card:hover:not(.selected) {
+      border-color: var(--green);
+      background: var(--green-light);
+      transform: translateX(5px);
+      box-shadow: var(--shadow-sm);
+    }
+    .c-card:active { transform: translateX(3px) scale(0.98); }
+    .c-card.selected {
+      border-color: var(--green);
+      background: var(--green-light);
+      transform: translateX(5px);
+      box-shadow: 0 4px 18px var(--green-glow);
+    }
+    .c-icon {
+      width: 46px; height: 46px;
+      border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 23px;
+      flex-shrink: 0;
+      background: var(--yellow-light);
+      transition: background 0.2s;
+    }
+    .c-card.selected .c-icon { background: var(--yellow); box-shadow: 0 2px 8px var(--yellow-glow); }
+    .c-body { flex: 1; min-width: 0; }
+    .c-name {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .c-desc {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-mid);
+    }
+    .c-check {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 2px solid #D8D8D8;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .c-card.selected .c-check {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    /* ─── Nav Buttons ────────────────────────────────────────── */
+    .nav {
+      display: flex;
+      gap: 12px;
+      padding: 14px 20px 28px;
+    }
+    .btn-back {
+      padding: 0 20px;
+      height: 56px;
+      border: 2px solid #DCDCDC;
+      border-radius: var(--r-sm);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-mid);
+      background: var(--white);
+      transition: all 0.18s;
+      flex-shrink: 0;
+      min-width: 76px;
+    }
+    .btn-back:hover { border-color: var(--text-mid); color: var(--text); transform: translateX(-2px); }
+    .btn-back:active { transform: scale(0.96); }
+    .btn-next {
+      flex: 1;
+      height: 56px;
+      border-radius: var(--r-sm);
+      font-size: 16px;
+      font-weight: 900;
+      color: #fff;
+      background: var(--green);
+      box-shadow: 0 5px 18px var(--green-glow);
+      letter-spacing: 0.2px;
+      transition: all 0.18s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-next::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .btn-next:hover:not(:disabled) {
+      background: var(--green-dark);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px var(--green-glow);
+    }
+    .btn-next:active:not(:disabled) { transform: scale(0.97) translateY(0); }
+    .btn-next:disabled {
+      background: #D4D4D4;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #A0A0A0;
+      transform: none;
+    }
+    .btn-next.confirm-btn {
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+    }
+    .btn-next.confirm-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -110%;
+      width: 60%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+      transition: left 0.6s ease;
+    }
+    .btn-next.confirm-btn:not(:disabled):hover::before { left: 130%; }
+
+    /* ─── Confirmation Screen ─────────────────────────────────── */
+    #conf-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px 24px 48px;
+      flex: 1;
+    }
+    #conf-screen.visible {
+      display: flex;
+      animation: confPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes confPop {
+      from { opacity: 0; transform: scale(0.75); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .conf-bubble {
+      width: 108px; height: 108px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--green-light), var(--yellow-light));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 52px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px var(--green-glow), 0 0 0 10px rgba(82,169,110,0.08);
+      animation: bobble 3s ease-in-out infinite;
+    }
+    .conf-title {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--green-dark);
+      margin-bottom: 10px;
+      line-height: 1.25;
+    }
+    .conf-msg {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-mid);
+      line-height: 1.65;
+      max-width: 300px;
+      margin-bottom: 28px;
+    }
+    .conf-card {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: var(--shadow);
+      text-align: left;
+      border: 1.5px solid rgba(82,169,110,0.12);
+      margin-bottom: 28px;
+    }
+    .s-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid #F4F4F4;
+    }
+    .s-row:last-child { border-bottom: none; }
+    .s-ico   { font-size: 18px; width: 26px; text-align: center; flex-shrink: 0; }
+    .s-lbl   { font-size: 11px; font-weight: 900; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.6px; width: 82px; flex-shrink: 0; }
+    .s-val   { font-size: 14px; font-weight: 700; color: var(--text); flex: 1; }
+    .btn-reset {
+      padding: 14px 34px;
+      border: 2px solid var(--green);
+      border-radius: var(--r-sm);
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--green-dark);
+      background: transparent;
+      transition: all 0.18s;
+    }
+    .btn-reset:hover { background: var(--green-light); transform: translateY(-2px); }
+    .btn-reset:active { transform: scale(0.96); }
+
+    /* ─── Slots Loading ─────────────────────────────────────── */
+    .slots-loading {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 18px 0 10px;
+      color: var(--text-light);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .slots-loading.visible { display: flex; }
+    .loading-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: dotBounce 1.2s ease-in-out infinite;
+    }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes dotBounce {
+      0%,80%,100% { transform: scale(0.6); opacity: 0.4; }
+      40%          { transform: scale(1);   opacity: 1; }
+    }
+
+    /* ─── Step 5 contact input icons ────────────────────────── */
+    #step5 .date-row:first-child .date-input-wrap::before { content: '👤'; }
+    #step5 .date-row:last-child  .date-input-wrap::before { content: '📱'; }
+
+    /* ─── Responsive tweak ───────────────────────────────────── */
+    @media (min-width: 480px) {
+      .app { border-radius: 24px; min-height: auto; margin: 32px auto; box-shadow: 0 16px 64px rgba(0,0,0,0.12); }
+      body { background: var(--cream-dark); display: flex; align-items: flex-start; justify-content: center; padding: 20px 0; }
+      body::before { border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Floating decorative shapes -->
+<div class="shapes" id="shapes"></div>
+
+<div class="app">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-badge">⭐</div>
+      <span class="logo-name">Happy Little Hearts</span>
+    </div>
+    <div class="header-sub">Book a Viewing</div>
+  </header>
+
+  <!-- Progress Indicator -->
+  <div class="progress-outer" id="progressOuter">
+    <div class="progress-track">
+      <div class="p-step">
+        <div class="p-dot active" id="dot1"><span class="p-num">1</span></div>
+        <div class="p-label active" id="lbl1">Date &amp; Time</div>
+      </div>
+      <div class="p-line" id="ln1"></div>
+      <div class="p-step">
+        <div class="p-dot" id="dot2"><span class="p-num">2</span></div>
+        <div class="p-label" id="lbl2">Visitors</div>
+      </div>
+      <div class="p-line" id="ln2"></div>
+      <div class="p-step">
+        <div class="p-dot" id="dot3"><span class="p-num">3</span></div>
+        <div class="p-label" id="lbl3">Session</div>
+      </div>
+      <div class="p-line" id="ln3"></div>
+      <div class="p-step">
+        <div class="p-dot" id="dot4"><span class="p-num">4</span></div>
+        <div class="p-label" id="lbl4">Child's Age</div>
+      </div>
+      <div class="p-line" id="ln4"></div>
+      <div class="p-step">
+        <div class="p-dot" id="dot5"><span class="p-num">5</span></div>
+        <div class="p-label" id="lbl5">Your Details</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step Content -->
+  <div class="content" id="stepsContent">
+
+    <!-- Step 1 — Date & Time -->
+    <div class="step active" id="step1">
+      <div class="step-title">Pick a Date &amp; Time ✨</div>
+      <div class="step-sub">When would you like to visit us?</div>
+
+      <div class="date-row">
+        <div class="field-lbl">Select Date</div>
+        <div class="date-input-wrap">
+          <input type="date" class="date-input" id="dateInput" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="field-lbl">Available Time Slots</div>
+      <div class="slots-loading" id="slotsLoading">
+        <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
+        <span>Checking availability…</span>
+      </div>
+      <div class="time-grid" id="timeGrid"></div>
+    </div>
+
+    <!-- Step 2 — Visitors -->
+    <div class="step" id="step2">
+      <div class="step-title">Who's Visiting? 👋</div>
+      <div class="step-sub">Let us know who'll be joining the tour</div>
+      <div class="choice-list">
+        <div class="c-card" data-key="visitor" data-val="Mum only" onclick="pick(this)">
+          <div class="c-icon">👩</div>
+          <div class="c-body">
+            <div class="c-name">Mum Only</div>
+            <div class="c-desc">Just mum attending the viewing</div>
+          </div>
+          <div class="c-check">✓</div>
+        </div>
+        <div class="c-card" data-key="visitor" data-val="Dad only" onclick="pick(this)">
+          <div class="c-icon">👨</div>
+          <div class="c-body">
+            <div class="c-name">Dad Only</div>
+            <div class="c-desc">Just dad attending the viewing</div>
+          </div>
+          <div class="c-check">✓</div>
+        </div>
+        <div class="c-card" data-key="visitor" data-val="Both Parents" onclick="pick(this)">
+          <div class="c-icon">👨‍👩‍👧</div>
+          <div class="c-body">
+            <div class="c-name">Both Parents</div>
+            <div class="c-desc">Mum and dad attending together</div>
+          </div>
+          <div class="c-check">✓</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 — Session -->
+    <div class="step" id="step3">
+      <div class="step-title">Interested Session 📚</div>
+      <div class="step-sub">Which session would suit your family?</div>
+      <div class="choice-list">
+        <div class="c-card" data-key="session" data-val="AM Session" onclick="pick(this)">
+          <div class="c-icon">🌅</div>
+          <div class="c-body">
+            <div class="c-name">AM Session</div>
+            <div class="c-desc">8:15am – 11:15am · Morning only</div>
+          </div>
+          <div class="c-check">✓</div>
+        </div>
+        <div class="c-card" data-key="session" data-val="PM Session" onclick="pick(this)">
+          <div class="c-icon">🌤️</div>
+          <div class="c-body">
+            <div class="c-name">PM Session</div>
+            <div class="c-desc">11:50am – 2:45pm · Afternoon only</div>
+          </div>
+          <div class="c-check">✓</div>
+        </div>
+        <div class="c-card" data-key="session" data-val="Full Day" onclick="pick(this)">
+          <div class="c-icon">☀️</div>
+          <div class="c-body">
+            <div class="c-name">Full Day</div>
+            <div class="c-desc">8:15am – 2:45pm · All day care</div>
+          </div>
+          <div class="c-check">✓</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 — Age -->
+    <div class="step" id="step4">
+      <div class="step-title">Child's Age 🍼</div>
+      <div class="step-sub">How old is your little one?</div>
+      <div class="choice-list">
+        <div class="c-card" data-key="age" data-val="Under 2 years" onclick="pick(this)">
+          <div class="c-icon">🍼</div>
+          <div class="c-body">
+            <div class="c-name">Under 2 Years</div>
+            <div class="c-desc">Baby &amp; toddler room</div>
+          </div>
+          <div class="c-check">✓</div>
+        </div>
+        <div class="c-card" data-key="age" data-val="2 years" onclick="pick(this)">
+          <div class="c-icon">🧸</div>
+          <div class="c-body">
+            <div class="c-name">2 Years</div>
+            <div class="c-desc">Wobbler room</div>
+          </div>
+          <div class="c-check">✓</div>
+        </div>
+        <div class="c-card" data-key="age" data-val="3 years" onclick="pick(this)">
+          <div class="c-icon">🎨</div>
+          <div class="c-body">
+            <div class="c-name">3 Years</div>
+            <div class="c-desc">Pre-school room</div>
+          </div>
+          <div class="c-check">✓</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 — Your Details -->
+    <div class="step" id="step5">
+      <div class="step-title">Your Details 📱</div>
+      <div class="step-sub">So we can confirm your viewing</div>
+
+      <div class="date-row">
+        <div class="field-lbl">Your Name</div>
+        <div class="date-input-wrap" style="--icon:'👤'">
+          <input type="text" class="date-input" id="nameInput" placeholder="e.g. Sarah Johnson" autocomplete="name" oninput="onContactInput()">
+        </div>
+      </div>
+
+      <div class="date-row">
+        <div class="field-lbl">Mobile Number</div>
+        <div class="date-input-wrap" style="--icon:'📱'">
+          <input type="tel" class="date-input" id="phoneInput" placeholder="e.g. 07700 900123" autocomplete="tel" oninput="onContactInput()">
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- Nav Buttons -->
+  <div class="nav" id="navBar">
+    <button class="btn-back" id="btnBack" onclick="goBack()" style="display:none">← Back</button>
+    <button class="btn-next" id="btnNext" onclick="goNext()" disabled>Next →</button>
+  </div>
+
+  <!-- Confirmation Screen -->
+  <div id="conf-screen">
+    <div class="conf-bubble">🎉</div>
+    <div class="conf-title">Booking Request Sent!</div>
+    <div class="conf-msg">
+      We'll be in touch shortly to confirm your viewing at <strong>Happy Little Hearts</strong>. 🌟
+    </div>
+    <div class="conf-card" id="confCard"></div>
+    <button class="btn-reset" onclick="resetApp()">+ Book Another Viewing</button>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+  /* ═══════════════════════════════════════
+     CONFIG
+  ═══════════════════════════════════════ */
+  const NURSERY    = 'Happy Little Hearts';
+  const WA_NUMBER  = '447440636051';
+
+  // Paste your Google Apps Script Web App URL here once set up:
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7_W057znzKBEUdI0SGJEHtzzpW-fUEeTVr6K01yQAbSM9u_lJ--NbONHwPCVE2vgkhQ/exec';
+
+  const TIME_SLOTS = [
+    '9:00 AM','9:30 AM','10:00 AM','10:30 AM',
+    '11:00 AM','11:30 AM','12:00 PM','12:30 PM',
+    '1:00 PM','1:30 PM'
+  ];
+
+  /* ═══════════════════════════════════════
+     STATE
+  ═══════════════════════════════════════ */
+  let step = 1;
+  let goingBack = false;
+  const sel = { date:'', time:'', visitor:'', session:'', age:'', name:'', phone:'' };
+
+  /* ═══════════════════════════════════════
+     DECORATIVE SHAPES
+  ═══════════════════════════════════════ */
+  (function buildShapes() {
+    const colors = ['#EAF5EE','#FEF8DC','#FFD8C2','#C8E8F8','#DDD4F5'];
+    const wrap = document.getElementById('shapes');
+    for (let i = 0; i < 8; i++) {
+      const d = document.createElement('div');
+      const s = 40 + Math.random() * 110;
+      d.className = 'shape';
+      d.style.cssText = `
+        width:${s}px; height:${s}px;
+        background:${colors[i % colors.length]};
+        left:${Math.random()*100}%;
+        top:${Math.random()*100}%;
+        --d:${5+Math.random()*7}s;
+        --dl:${Math.random()*4}s;
+        --tx:${(Math.random()-0.5)*40}px;
+        --ty:${(Math.random()-0.5)*40}px;
+      `;
+      wrap.appendChild(d);
+    }
+  })();
+
+  /* ═══════════════════════════════════════
+     DATE
+  ═══════════════════════════════════════ */
+  function nextWeekday() {
+    const d = new Date();
+    const day = d.getDay();
+    if (day === 6) d.setDate(d.getDate() + 2);
+    else if (day === 0) d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  }
+
+  function initDate() {
+    const inp  = document.getElementById('dateInput');
+    const init = nextWeekday();
+    inp.value  = init;
+    inp.min    = init;
+    sel.date   = init;
+
+    inp.addEventListener('change', () => {
+      const d = new Date(inp.value + 'T00:00:00');
+      const day = d.getDay();
+      if (day === 6) { d.setDate(d.getDate() + 2); inp.value = d.toISOString().split('T')[0]; }
+      if (day === 0) { d.setDate(d.getDate() + 1); inp.value = d.toISOString().split('T')[0]; }
+      sel.date = inp.value;
+      sel.time = ''; // clear time when date changes
+      loadSlots(sel.date);
+    });
+  }
+
+  /* ═══════════════════════════════════════
+     LIVE SLOT LOADING
+  ═══════════════════════════════════════ */
+  async function fetchBookedSlots(date) {
+    if (!SCRIPT_URL) return []; // no backend yet — all slots free
+    try {
+      const res  = await fetch(`${SCRIPT_URL}?action=slots&date=${date}`, { redirect: 'follow' });
+      const json = await res.json();
+      return Array.isArray(json.slots) ? json.slots : [];
+    } catch (e) {
+      console.warn('Could not fetch slots:', e);
+      return [];
+    }
+  }
+
+  async function loadSlots(date) {
+    const loading = document.getElementById('slotsLoading');
+    const grid    = document.getElementById('timeGrid');
+    loading.classList.add('visible');
+    grid.style.opacity = '0.4';
+    grid.style.pointerEvents = 'none';
+
+    const booked = await fetchBookedSlots(date);
+
+    loading.classList.remove('visible');
+    grid.style.opacity = '';
+    grid.style.pointerEvents = '';
+    buildGrid(new Set(booked));
+    refreshNav();
+  }
+
+  /* ═══════════════════════════════════════
+     TIME GRID
+  ═══════════════════════════════════════ */
+  function buildGrid(booked = new Set()) {
+    const g = document.getElementById('timeGrid');
+    g.innerHTML = '';
+    TIME_SLOTS.forEach(t => {
+      const isBooked = booked.has(t);
+      const el = document.createElement('div');
+      el.className = 't-slot' + (isBooked ? ' booked' : '');
+      el.innerHTML = `<span class="t-time">${t}</span><span class="t-badge">${isBooked ? 'Booked' : 'Free'}</span>`;
+      if (!isBooked) el.addEventListener('click', () => pickTime(el, t));
+      g.appendChild(el);
+    });
+  }
+
+  function pickTime(el, t) {
+    document.querySelectorAll('.t-slot').forEach(s => {
+      s.classList.remove('selected');
+      s.querySelector('.t-badge').textContent = 'Free';
+    });
+    el.classList.add('selected');
+    el.querySelector('.t-badge').textContent = 'Booked';
+    sel.time = t;
+    refreshNav();
+  }
+
+  /* ═══════════════════════════════════════
+     CHOICE CARDS
+  ═══════════════════════════════════════ */
+  function pick(el) {
+    const key = el.dataset.key;
+    el.closest('.choice-list').querySelectorAll('.c-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    sel[key] = el.dataset.val;
+    refreshNav();
+  }
+
+  /* ═══════════════════════════════════════
+     NAVIGATION
+  ═══════════════════════════════════════ */
+  function stepValid() {
+    if (step === 1) return sel.date && sel.time;
+    if (step === 2) return !!sel.visitor;
+    if (step === 3) return !!sel.session;
+    if (step === 4) return !!sel.age;
+    if (step === 5) return sel.name.trim().length > 1 && sel.phone.trim().length > 6;
+    return false;
+  }
+
+  function onContactInput() {
+    sel.name  = document.getElementById('nameInput').value;
+    sel.phone = document.getElementById('phoneInput').value;
+    refreshNav();
+  }
+
+  function refreshNav() {
+    const next = document.getElementById('btnNext');
+    const back = document.getElementById('btnBack');
+    next.disabled = !stepValid();
+    back.style.display = step > 1 ? '' : 'none';
+    if (step === 5) {
+      next.textContent = '✉️ Send via WhatsApp';
+      next.classList.add('confirm-btn');
+    } else {
+      next.textContent = 'Next →';
+      next.classList.remove('confirm-btn');
+    }
+  }
+
+  function goNext() {
+    if (!stepValid()) return;
+    if (step === 5) { submit(); return; }
+    goingBack = false;
+    showStep(step + 1);
+  }
+
+  function goBack() {
+    if (step <= 1) return;
+    goingBack = true;
+    showStep(step - 1);
+  }
+
+  function showStep(n) {
+    const old = document.getElementById('step' + step);
+    old.classList.remove('active', 'back');
+    step = n;
+    const fresh = document.getElementById('step' + step);
+    fresh.classList.toggle('back', goingBack);
+    fresh.classList.add('active');
+    updateDots();
+    refreshNav();
+    document.querySelector('.app').scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateDots() {
+    for (let i = 1; i <= 5; i++) {
+      const dot = document.getElementById('dot' + i);
+      const lbl = document.getElementById('lbl' + i);
+      dot.classList.remove('active', 'done');
+      lbl.classList.remove('active');
+      if (i < step)        { dot.classList.add('done'); }
+      else if (i === step) { dot.classList.add('active'); lbl.classList.add('active'); }
+      if (i < 5) document.getElementById('ln' + i).classList.toggle('done', i < step);
+    }
+  }
+
+  /* ═══════════════════════════════════════
+     SUBMISSION
+  ═══════════════════════════════════════ */
+  function fmtDate(ds) {
+    const d = new Date(ds + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  }
+
+  async function submit() {
+    const btn     = document.getElementById('btnNext');
+    btn.disabled  = true;
+    btn.textContent = 'Sending…';
+
+    // Save to Google Sheet if connected
+    if (SCRIPT_URL) {
+      try {
+        const params = new URLSearchParams({
+          action:  'book',
+          date:    sel.date,
+          time:    sel.time,
+          visitor: sel.visitor,
+          session: sel.session,
+          age:     sel.age,
+          name:    sel.name.trim(),
+          phone:   sel.phone.trim()
+        });
+        await fetch(`${SCRIPT_URL}?${params}`, { redirect: 'follow' });
+      } catch (e) {
+        console.warn('Sheet save failed, continuing anyway:', e);
+      }
+    }
+
+    // Open WhatsApp
+    const dateStr = fmtDate(sel.date);
+    const msg = [
+      `Hello ${NURSERY}! 👋`,
+      ``,
+      `I'd like to book a nursery viewing — here are my details:`,
+      ``,
+      `👤 Name:        ${sel.name.trim()}`,
+      `📱 Mobile:      ${sel.phone.trim()}`,
+      `📅 Date:        ${dateStr}`,
+      `⏰ Time:        ${sel.time}`,
+      `👥 Visitors:    ${sel.visitor}`,
+      `📚 Session:     ${sel.session}`,
+      `🍼 Child's Age: ${sel.age}`,
+      ``,
+      `Please let me know if this works. Thank you! 🌟`
+    ].join('\n');
+
+    window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
+    showConfirmation(dateStr);
+  }
+
+  function showConfirmation(dateStr) {
+    document.getElementById('progressOuter').style.display = 'none';
+    document.getElementById('stepsContent').style.display  = 'none';
+    document.getElementById('navBar').style.display        = 'none';
+
+    document.getElementById('confCard').innerHTML = `
+      <div class="s-row"><span class="s-ico">👤</span><span class="s-lbl">Name</span><span class="s-val">${sel.name.trim()}</span></div>
+      <div class="s-row"><span class="s-ico">📅</span><span class="s-lbl">Date</span><span class="s-val">${dateStr}</span></div>
+      <div class="s-row"><span class="s-ico">⏰</span><span class="s-lbl">Time</span><span class="s-val">${sel.time}</span></div>
+      <div class="s-row"><span class="s-ico">👥</span><span class="s-lbl">Visitors</span><span class="s-val">${sel.visitor}</span></div>
+      <div class="s-row"><span class="s-ico">📚</span><span class="s-lbl">Session</span><span class="s-val">${sel.session}</span></div>
+      <div class="s-row"><span class="s-ico">🍼</span><span class="s-lbl">Child's Age</span><span class="s-val">${sel.age}</span></div>
+    `;
+    document.getElementById('conf-screen').classList.add('visible');
+  }
+
+  /* ═══════════════════════════════════════
+     RESET
+  ═══════════════════════════════════════ */
+  function resetApp() {
+    Object.assign(sel, { date:'', time:'', visitor:'', session:'', age:'', name:'', phone:'' });
+    document.getElementById('nameInput').value  = '';
+    document.getElementById('phoneInput').value = '';
+    step = 1; goingBack = false;
+
+    document.getElementById('conf-screen').classList.remove('visible');
+    document.getElementById('progressOuter').style.display = '';
+    document.getElementById('stepsContent').style.display  = '';
+    document.getElementById('navBar').style.display        = '';
+
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active','back'));
+    document.getElementById('step1').classList.add('active');
+    document.querySelectorAll('.c-card').forEach(c => c.classList.remove('selected'));
+
+    const init = nextWeekday();
+    document.getElementById('dateInput').value = init;
+    sel.date = init;
+    updateDots();
+    loadSlots(init);
+  }
+
+  /* ═══════════════════════════════════════
+     INIT
+  ═══════════════════════════════════════ */
+  initDate();
+  loadSlots(sel.date);
+  refreshNav();
+</script>
+</body>
+</html>
