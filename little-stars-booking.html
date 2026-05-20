@@ -870,10 +870,10 @@
 
   <!-- Confirmation Screen -->
   <div id="conf-screen">
-    <div class="conf-bubble">🎉</div>
-    <div class="conf-title">Booking Request Sent!</div>
+    <div class="conf-bubble">✅</div>
+    <div class="conf-title">Booking Confirmed!</div>
     <div class="conf-msg">
-      We'll be in touch shortly to confirm your viewing at <strong>Happy Little Hearts</strong>. 🌟
+      Your viewing at <strong>Happy Little Hearts</strong> is confirmed. We'll send you a WhatsApp message shortly! 💚
     </div>
     <div class="conf-card" id="confCard"></div>
     <button class="btn-reset" onclick="resetApp()">+ Book Another Viewing</button>
@@ -1188,7 +1188,7 @@
       }
     }
 
-    // Open WhatsApp
+    // Open WhatsApp — parent notifies nursery
     const dateStr = fmtDate(sel.date);
     const msg = [
       `Hello ${NURSERY}! 👋`,
@@ -1202,10 +1202,7 @@
       `👥 Visitors:    ${sel.visitor}`,
       `📚 Session:     ${sel.session}`,
       `🍼 Child's Age: ${sel.age}`,
-      ``,
-      `Please let me know if this works. Thank you! 🌟`
     ].join('\n');
-
     window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank');
     showConfirmation(dateStr);
   }
